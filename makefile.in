@@ -1,0 +1,145 @@
+# AdvBox Makefile
+# Generated: 2025
+# Author: AnmiTaliDev
+# Last Updated: 2025-04-03 05:34:02
+
+# Include compiler configuration
+-include build_config.mk
+
+# Default compiler settings if not set by configure.sh
+CC ?= clang
+CXX ?= clang++
+RUSTC = rustc
+
+# Optimization level
+OPT_LEVEL ?= 2
+
+# Compiler flags
+COMMON_FLAGS = -Wall -Wextra -O$(OPT_LEVEL)
+CFLAGS = $(COMMON_FLAGS) -std=gnu99 -D_GNU_SOURCE
+CXXFLAGS = $(COMMON_FLAGS) -std=c++17
+RUSTFLAGS = -C opt-level=$(OPT_LEVEL)
+
+# Additional flags based on compiler
+ifeq ($(CC),clang)
+    CFLAGS += -Wno-unused-parameter
+endif
+
+# Directories
+SRC_DIR = src
+BIN_DIR = bin
+BUILD_DIR = build
+LIB_DIR = lib
+INSTALL_DIR = /usr/local/bin
+
+# Colors for pretty output
+BLUE = \033[0;34m
+GREEN = \033[0;32m
+YELLOW = \033[1;33m
+RED = \033[0;31m
+CYAN = \033[0;36m
+WHITE = \033[1;37m
+NC = \033[0m
+BOLD = \033[1m
+
+# Find all source files (excluding extract.rs)
+C_SOURCES := $(wildcard $(SRC_DIR)/*.c)
+CPP_SOURCES := $(wildcard $(SRC_DIR)/*.cpp)
+RUST_SOURCES := $(filter-out $(SRC_DIR)/extract.rs,$(wildcard $(SRC_DIR)/*.rs))
+
+# Generate target names
+C_TARGETS := $(patsubst $(SRC_DIR)/%.c,$(BIN_DIR)/%,$(C_SOURCES))
+CPP_TARGETS := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%,$(CPP_SOURCES))
+RUST_TARGETS := $(patsubst $(SRC_DIR)/%.rs,$(BIN_DIR)/%,$(RUST_SOURCES))
+
+ALL_TARGETS = $(C_TARGETS) $(CPP_TARGETS) $(RUST_TARGETS)
+
+# Default target
+.PHONY: all
+all: banner $(ALL_TARGETS)
+	@echo -e "$(GREEN)$(BOLD)✓ Build completed successfully!$(NC)"
+	@echo -e "$(BLUE)→ Binaries are in: $(BOLD)$(BIN_DIR)/$(NC)"
+
+# Banner
+.PHONY: banner
+banner:
+	@echo -e "$(BLUE)╔════════════════════════════════════════════╗$(NC)"
+	@echo -e "$(BLUE)║$(NC)        $(BOLD)Building AdvBox Tools$(NC)           $(BLUE)    ║$(NC)"
+	@echo -e "$(BLUE)║$(NC) $(DIM)CC: $(CC)$(NC)                              $(BLUE)    ║$(NC)"
+	@echo -e "$(BLUE)║$(NC) $(DIM)CXX: $(CXX)$(NC)                            $(BLUE)   ║$(NC)"
+	@echo -e "$(BLUE)╚════════════════════════════════════════════╝$(NC)"
+
+# Build rules
+$(BIN_DIR)/%: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)/$(*D) $(BIN_DIR)
+	@echo -e "$(YELLOW)→ Building C program:$(NC) $(@F)"
+	@$(CC) $(CFLAGS) -o $@ $< 2> $(BUILD_DIR)/$(*F).log || \
+		(echo -e "$(RED)✗ Build failed. See $(BUILD_DIR)/$(*F).log$(NC)" && exit 1)
+	@echo -e "$(GREEN)✓$(NC) Done"
+
+$(BIN_DIR)/%: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)/$(*D) $(BIN_DIR)
+	@echo -e "$(YELLOW)→ Building C++ program:$(NC) $(@F)"
+	@$(CXX) $(CXXFLAGS) -o $@ $< 2> $(BUILD_DIR)/$(*F).log || \
+		(echo -e "$(RED)✗ Build failed. See $(BUILD_DIR)/$(*F).log$(NC)" && exit 1)
+	@echo -e "$(GREEN)✓$(NC) Done"
+
+$(BIN_DIR)/%: $(SRC_DIR)/%.rs
+	@mkdir -p $(BUILD_DIR)/$(*D) $(BIN_DIR)
+	@echo -e "$(YELLOW)→ Building Rust program:$(NC) $(@F)"
+	@$(RUSTC) $(RUSTFLAGS) -o $@ $< 2> $(BUILD_DIR)/$(*F).log || \
+		(echo -e "$(RED)✗ Build failed. See $(BUILD_DIR)/$(*F).log$(NC)" && exit 1)
+	@echo -e "$(GREEN)✓$(NC) Done"
+
+# Install
+.PHONY: install
+install: all
+	@echo -e "$(YELLOW)Installing to $(INSTALL_DIR)...$(NC)"
+	@for prog in $(ALL_TARGETS); do \
+		echo -e "$(BLUE)→$(NC) Installing: $$(basename $$prog)"; \
+		sudo install -m 755 $$prog $(INSTALL_DIR)/; \
+	done
+	@echo -e "$(GREEN)✓ Installation complete$(NC)"
+
+# Uninstall
+.PHONY: uninstall
+uninstall:
+	@echo -e "$(YELLOW)Uninstalling...$(NC)"
+	@for prog in $(ALL_TARGETS); do \
+		echo -e "$(BLUE)→$(NC) Removing: $$(basename $$prog)"; \
+		sudo rm -f "$(INSTALL_DIR)/$$(basename $$prog)"; \
+	done
+	@echo -e "$(GREEN)✓ Uninstall complete$(NC)"
+
+# Clean
+.PHONY: clean
+clean:
+	@echo -e "$(YELLOW)Cleaning...$(NC)"
+	@rm -rf $(BIN_DIR)/* $(BUILD_DIR)/*
+	@echo -e "$(GREEN)✓ Clean complete$(NC)"
+
+# Help
+.PHONY: help
+help:
+	@echo -e "$(BOLD)Usage:$(NC)"
+	@echo -e "  $(BLUE)make$(NC)        - Build all programs"
+	@echo -e "  $(BLUE)make install$(NC) - Install to $(INSTALL_DIR)"
+	@echo -e "  $(BLUE)make clean$(NC)   - Remove built files"
+	@echo -e "  $(BLUE)make help$(NC)    - Show this help"
+
+# Show status
+.PHONY: status
+status:
+	@echo -e "$(BOLD)Build Status:$(NC)"
+	@echo -e "$(BLUE)C Programs:$(NC)"
+	@for prog in $(C_TARGETS); do \
+		echo -e "  → $$(basename $$prog)"; \
+	done
+	@echo -e "$(BLUE)C++ Programs:$(NC)"
+	@for prog in $(CPP_TARGETS); do \
+		echo -e "  → $$(basename $$prog)"; \
+	done
+	@echo -e "$(BLUE)Rust Programs:$(NC)"
+	@for prog in $(RUST_TARGETS); do \
+		echo -e "  → $$(basename $$prog)"; \
+	done

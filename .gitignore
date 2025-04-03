@@ -1,0 +1,12 @@
+lib/
+build/
+Makefile
+*.o
+*.so
+*.a
+*.dylib
+*.dll
+*.exe
+*.d
+bin/
+*.mk
