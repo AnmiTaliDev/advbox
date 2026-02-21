@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
-// Справка по использованию
+// Usage help text
 const char* HELP = R"(
 TZConvert - Time Zone Converter
 
@@ -36,7 +36,7 @@ Examples:
     tzconvert -l
 )";
 
-// Структура для времени
+// Date/time structure
 struct DateTime {
     int year;
     int month;
@@ -57,7 +57,7 @@ struct DateTime {
     }
 };
 
-// Карта смещений популярных часовых поясов (в секундах)
+// UTC offset map for common timezones (in seconds)
 const std::map<std::string, int> TIMEZONE_OFFSETS = {
     {"UTC", 0},
     {"GMT", 0},
@@ -72,7 +72,7 @@ const std::map<std::string, int> TIMEZONE_OFFSETS = {
     {"Pacific/Auckland", 43200},    // UTC+12
 };
 
-// Функция для парсинга времени из строки
+// Parse a time string into a DateTime
 DateTime parse_time(const std::string& time_str) {
     DateTime dt;
     
@@ -83,13 +83,13 @@ DateTime parse_time(const std::string& time_str) {
     std::istringstream ss(time_str);
     char delimiter;
     
-    if (time_str.length() > 8) { // Полный формат с датой
+    if (time_str.length() > 8) { // Full datetime format
         ss >> dt.year >> delimiter
            >> dt.month >> delimiter
            >> dt.day >> dt.hour >> delimiter
            >> dt.minute >> delimiter
            >> dt.second;
-    } else { // Только время
+    } else { // Time only
         ss >> dt.hour >> delimiter
            >> dt.minute >> delimiter
            >> dt.second;
@@ -102,11 +102,11 @@ DateTime parse_time(const std::string& time_str) {
     return dt;
 }
 
-// Функция для конвертации времени между часовыми поясами
+// Convert a DateTime from one timezone to another
 DateTime convert_timezone(const DateTime& dt, 
                         const std::string& from_tz,
                         const std::string& to_tz) {
-    // Находим смещения
+    // Look up the UTC offsets
     auto from_it = TIMEZONE_OFFSETS.find(from_tz);
     auto to_it = TIMEZONE_OFFSETS.find(to_tz);
     
@@ -114,10 +114,10 @@ DateTime convert_timezone(const DateTime& dt,
         throw std::runtime_error("Unknown timezone");
     }
     
-    // Вычисляем разницу в секундах
+    // Compute the offset difference in seconds
     int offset_diff = to_it->second - from_it->second;
     
-    // Конвертируем в struct tm для простоты вычислений
+    // Convert to struct tm for arithmetic
     struct tm tm_time = {};
     tm_time.tm_year = dt.year - 1900;
     tm_time.tm_mon = dt.month - 1;
@@ -126,7 +126,7 @@ DateTime convert_timezone(const DateTime& dt,
     tm_time.tm_min = dt.minute;
     tm_time.tm_sec = dt.second;
     
-    // Конвертируем в timestamp, добавляем разницу и конвертируем обратно
+    // Convert to timestamp, apply the offset difference, then convert back
     time_t timestamp = mktime(&tm_time);
     timestamp += offset_diff;
     
@@ -143,7 +143,7 @@ DateTime convert_timezone(const DateTime& dt,
     return result;
 }
 
-// Функция форматирования вывода
+// Format a DateTime for output
 std::string format_time(const DateTime& dt, const std::string& format, bool short_format) {
     std::ostringstream ss;
     
@@ -164,7 +164,7 @@ std::string format_time(const DateTime& dt, const std::string& format, bool shor
     return ss.str();
 }
 
-// Функция вывода списка доступных часовых поясов
+// Print the list of available timezones
 void list_timezones() {
     std::cout << "Available time zones:\n\n";
     
@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
         bool short_format = false;
         std::string format = "";
         
-        // Разбор опций
+        // Parse options
         while (!args.empty() && args[0][0] == '-') {
             std::string opt = args[0];
             args.erase(args.begin());
@@ -233,11 +233,11 @@ int main(int argc, char* argv[]) {
             throw std::runtime_error("Time not specified");
         }
         
-        // Парсим время
+        // Parse the time argument
         DateTime dt = parse_time(args[0]);
         args.erase(args.begin());
         
-        // Определяем исходный и целевой часовые пояса
+        // Determine source and target timezones
         std::string from_tz = use_utc ? "UTC" : "UTC";
         std::string to_tz = "UTC";
         
@@ -250,10 +250,10 @@ int main(int argc, char* argv[]) {
             to_tz = args[0];
         }
         
-        // Конвертируем время
+        // Convert the time
         DateTime converted = convert_timezone(dt, from_tz, to_tz);
         
-        // Выводим результат
+        // Print the result
         std::cout << format_time(converted, format, short_format)
                   << " " << to_tz << "\n";
         

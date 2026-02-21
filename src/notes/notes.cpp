@@ -79,17 +79,17 @@ private:
         while (std::getline(file, line)) {
             if (line.empty()) continue;
             
-            if (line[0] == '#') { // Новая заметка
+            if (line[0] == '#') { // New note
                 if (current_note.id != 0) {
                     notes.push_back(current_note);
                 }
                 current_note = Note();
                 current_note.id = std::stoi(line.substr(1));
             }
-            else if (line[0] == '@') { // Дата
+            else if (line[0] == '@') { // Date
                 current_note.date = line.substr(1);
             }
-            else if (line[0] == '*') { // Теги
+            else if (line[0] == '*') { // Tags
                 std::string tags = line.substr(1);
                 std::stringstream ss(tags);
                 std::string tag;
@@ -97,7 +97,7 @@ private:
                     current_note.tags.push_back(tag);
                 }
             }
-            else { // Текст заметки
+            else { // Note body
                 if (!current_note.text.empty()) {
                     current_note.text += "\n";
                 }
@@ -174,7 +174,7 @@ public:
             
             std::cout << "\n";
             
-            // Показываем первые 50 символов заметки
+            // Show the first 50 characters of the note
             std::string preview = note.text.substr(0, 50);
             if (note.text.length() > 50) {
                 preview += "...";

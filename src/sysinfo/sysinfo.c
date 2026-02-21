@@ -12,14 +12,14 @@
 #define MB (1024 * KB)
 #define GB (1024 * MB)
 
-// Структура для хранения информации о CPU
+// Structure for CPU information
 typedef struct {
     char model[256];
     int cores;
     float load[3];
 } CPUInfo;
 
-// Структура для хранения информации о памяти
+// Structure for memory information
 typedef struct {
     unsigned long total;
     unsigned long used;
@@ -29,29 +29,29 @@ typedef struct {
     unsigned long cached;
 } MemInfo;
 
-// Структура для хранения информации о диске
+// Structure for disk information
 typedef struct {
     unsigned long total;
     unsigned long used;
     unsigned long free;
 } DiskInfo;
 
-// Получение информации о CPU
+// Read CPU information
 void get_cpu_info(CPUInfo *cpu) {
     FILE *fp;
     char line[256];
-    
-    // Получение модели CPU
+
+    // Read CPU model name
     fp = fopen("/proc/cpuinfo", "r");
     if (fp != NULL) {
         while (fgets(line, sizeof(line), fp)) {
             if (strncmp(line, "model name", 10) == 0) {
                 char *model = strchr(line, ':');
                 if (model) {
-                    model++; // Пропускаем двоеточие
-                    while (*model == ' ') model++; // Пропускаем пробелы
+                    model++; // Skip the colon
+                    while (*model == ' ') model++; // Skip leading spaces
                     strcpy(cpu->model, model);
-                    // Удаляем символ новой строки
+                    // Remove trailing newline
                     cpu->model[strlen(cpu->model)-1] = '\0';
                     break;
                 }
@@ -59,28 +59,28 @@ void get_cpu_info(CPUInfo *cpu) {
         }
         fclose(fp);
     }
-    
-    // Получение количества ядер
+
+    // Read number of online CPU cores
     cpu->cores = sysconf(_SC_NPROCESSORS_ONLN);
-    
-    // Получение загрузки CPU
+
+    // Read load averages
     if ((fp = fopen("/proc/loadavg", "r")) != NULL) {
         fscanf(fp, "%f %f %f", &cpu->load[0], &cpu->load[1], &cpu->load[2]);
         fclose(fp);
     }
 }
 
-// Получение информации о памяти
+// Read memory information
 void get_memory_info(MemInfo *mem) {
     struct sysinfo si;
-    
+
     if (sysinfo(&si) == 0) {
         mem->total = si.totalram;
         mem->free = si.freeram;
         mem->buffers = si.bufferram;
         mem->shared = si.sharedram;
-        
-        // Получение информации о кэше из /proc/meminfo
+
+        // Read cached memory from /proc/meminfo
         FILE *fp = fopen("/proc/meminfo", "r");
         if (fp != NULL) {
             char line[256];
@@ -92,15 +92,15 @@ void get_memory_info(MemInfo *mem) {
             }
             fclose(fp);
         }
-        
+
         mem->used = mem->total - mem->free - mem->buffers - mem->cached;
     }
 }
 
-// Получение информации о диске
+// Read disk information for the given path
 void get_disk_info(DiskInfo *disk, const char *path) {
     struct statvfs fs;
-    
+
     if (statvfs(path, &fs) == 0) {
         disk->total = (unsigned long)fs.f_blocks * fs.f_frsize;
         disk->free = (unsigned long)fs.f_bfree * fs.f_frsize;
@@ -108,7 +108,7 @@ void get_disk_info(DiskInfo *disk, const char *path) {
     }
 }
 
-// Форматирование размера в читаемый вид
+// Format byte count into a human-readable string
 void format_size(unsigned long bytes, char *result) {
     if (bytes >= GB) {
         sprintf(result, "%.1f GB", (float)bytes / GB);
@@ -121,7 +121,7 @@ void format_size(unsigned long bytes, char *result) {
     }
 }
 
-// Вывод процентов использования в виде прогресс-бара
+// Print a usage bar showing the given percentage
 void print_usage_bar(float percentage, int width) {
     int filled = (int)((percentage * width) / 100.0);
     printf("[");
@@ -148,8 +148,8 @@ void show_help() {
 int main(int argc, char *argv[]) {
     int show_cpu = 1, show_mem = 1, show_disk = 1;
     int opt;
-    
-    // Разбор опций
+
+    // Parse options
     while ((opt = getopt(argc, argv, "cmdhp")) != -1) {
         switch (opt) {
             case 'c':
@@ -169,48 +169,48 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
     }
-    
+
     struct utsname un;
     if (uname(&un) < 0) {
         perror("uname");
         return 1;
     }
-    
-    // Получение текущего времени
+
+    // Get current time
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
     char time_str[64];
     strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", tm);
-    
-    // Вывод общей информации
+
+    // Print general information
     printf("\n=== System Information ===\n");
     printf("Time: %s\n", time_str);
     printf("Hostname: %s\n", un.nodename);
     printf("OS: %s %s\n", un.sysname, un.release);
     printf("Architecture: %s\n\n", un.machine);
-    
+
     if (show_cpu) {
         CPUInfo cpu = {0};
         get_cpu_info(&cpu);
-        
+
         printf("=== CPU Information ===\n");
         printf("Model: %s\n", cpu.model);
         printf("Cores: %d\n", cpu.cores);
         printf("Load average: %.2f, %.2f, %.2f (1, 5, 15 min)\n\n",
                cpu.load[0], cpu.load[1], cpu.load[2]);
     }
-    
+
     if (show_mem) {
         MemInfo mem = {0};
         get_memory_info(&mem);
         char total[20], used[20], free[20], cached[20], buffers[20];
-        
+
         format_size(mem.total, total);
         format_size(mem.used, used);
         format_size(mem.free, free);
         format_size(mem.cached, cached);
         format_size(mem.buffers, buffers);
-        
+
         printf("=== Memory Information ===\n");
         printf("Total: %s\n", total);
         printf("Used:  %s  ", used);
@@ -220,16 +220,16 @@ int main(int argc, char *argv[]) {
         printf("Cached: %s\n", cached);
         printf("Buffers: %s\n\n", buffers);
     }
-    
+
     if (show_disk) {
         DiskInfo disk = {0};
         get_disk_info(&disk, "/");
         char total[20], used[20], free[20];
-        
+
         format_size(disk.total, total);
         format_size(disk.used, used);
         format_size(disk.free, free);
-        
+
         printf("=== Disk Information (/) ===\n");
         printf("Total: %s\n", total);
         printf("Used:  %s  ", used);
@@ -237,6 +237,6 @@ int main(int argc, char *argv[]) {
         printf("\n");
         printf("Free:  %s\n\n", free);
     }
-    
+
     return 0;
 }

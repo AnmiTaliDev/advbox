@@ -171,7 +171,7 @@ public:
                     expect_operator = true;
                 }
                 else {
-                    // Это функция
+                    // It is a function call
                     while (i < expr.length() && std::isspace(expr[i])) ++i;
                     if (i >= expr.length() || expr[i] != '(') {
                         throw std::runtime_error("Expected '(' after function name");

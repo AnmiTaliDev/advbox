@@ -1,8 +1,10 @@
 # AdvBox - Advanced Tool Box
 
-A collection of useful command-line utilities written in C, C++, and Rust.
+> This project is archived and no longer maintained.
 
-## 🛠 Utilities
+A collection of command-line utilities written in C, C++, and Rust.
+
+## Utilities
 
 - **calcx** - Calculator utility (C++)
 - **colors** - Color manipulation tool (Rust)
@@ -11,6 +13,7 @@ A collection of useful command-line utilities written in C, C++, and Rust.
 - **datediff** - Date difference calculator (Rust)
 - **dirsize** - Directory size analyzer (C++)
 - **estimate** - Estimation tool (Rust)
+- **extract** - Universal archive extractor (Rust)
 - **ftree** - File tree viewer (Rust)
 - **killport** - Port killer utility (Rust)
 - **lanlist** - LAN device lister (C++)
@@ -21,36 +24,32 @@ A collection of useful command-line utilities written in C, C++, and Rust.
 - **sysinfo** - System information display (C)
 - **tzconvert** - Timezone converter (C++)
 
-## 🚀 Building from Source
+## Building from Source
 
-1. Ensure you have the following prerequisites installed:
-   - GCC/G++ compiler
-   - Rust toolchain (cargo)
-   - Make
+Prerequisites:
 
-2. Run the configuration script:
-   ```bash
-   ./configure.sh
-   ```
+- GCC/G++ compiler
+- Rust toolchain (rustc)
+- Meson
+- Ninja
 
-3. Build the project:
-   ```bash
-   make
-   ```
+Build:
 
-4. Install (optional):
-   ```bash
-   sudo make install
-   ```
+```bash
+meson setup build
+ninja -C build
+```
 
-## 📝 License
+Install (optional):
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+sudo ninja -C build install
+```
 
-## 👤 Author
+## License
 
-- **AnmiTaliDev**
+MIT License. See the LICENSE file for details.
 
-## 🤝 Contributing
+## Author
 
-Contributions, issues, and feature requests are welcome!
+AnmiTaliDev

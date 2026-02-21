@@ -44,25 +44,25 @@ struct ProcessInfo {
 fn get_processes_by_port(port: u16) -> Vec<ProcessInfo> {
     let mut processes = Vec::new();
     
-    // Получаем TCP соединения
+    // Query TCP/UDP connections
     if let Ok(output) = Command::new("ss")
         .args(&["-tupln"])
         .output() {
         
         let output = String::from_utf8_lossy(&output.stdout);
         
-        for line in output.lines().skip(1) { // Пропускаем заголовок
+        for line in output.lines().skip(1) { // Skip the header line
             let fields: Vec<&str> = line.split_whitespace().collect();
             if fields.len() >= 6 {
-                // Проверяем, содержит ли строка наш порт
+                // Check whether this line contains our port
                 if fields[3].contains(&format!(":{}", port)) {
-                    // Извлекаем PID из последнего поля
+                    // Extract PID from the last field
                     if let Some(pid_str) = fields.last()
                         .and_then(|s| s.split(',').find(|s| s.starts_with("pid=")))
                         .and_then(|s| s.split('=').nth(1)) {
                         
                         if let Ok(pid) = pid_str.parse::<u32>() {
-                            // Получаем информацию о процессе
+                            // Get process details
                             if let Ok(proc_output) = Command::new("ps")
                                 .args(&["-p", &pid.to_string(), "-o", "comm=,user="])
                                 .output() {
@@ -160,7 +160,7 @@ fn main() {
         exit(1);
     }
     
-    // Проверяем root права для портов < 1024
+    // Check root privileges for ports below 1024
     let is_root = Command::new("id")
         .arg("-u")
         .output()
@@ -176,7 +176,7 @@ fn main() {
     let mut port_processes = HashMap::new();
     let mut found = false;
     
-    // Собираем информацию о процессах для каждого порта
+    // Collect process information for each port
     for &port in &config.ports {
         let processes = get_processes_by_port(port);
         if !processes.is_empty() {
@@ -192,7 +192,7 @@ fn main() {
         exit(0);
     }
     
-    // Выводим информацию и/или завершаем процессы
+    // Print information and/or terminate processes
     for (&port, processes) in &port_processes {
         for proc in processes {
             if !config.quiet {

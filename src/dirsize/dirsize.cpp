@@ -112,13 +112,13 @@ private:
                             entries.emplace_back(entry.path(), size);
                         }
                     } catch (const fs::filesystem_error&) {
-                        // Пропускаем файлы, к которым нет доступа
+                        // Skip files that cannot be accessed
                         continue;
                     }
                 }
             }
         } catch (const fs::filesystem_error&) {
-            // Пропускаем директории, к которым нет доступа
+            // Skip directories that cannot be accessed
             return;
         }
 
@@ -189,7 +189,7 @@ public:
         std::vector<std::thread> threads;
         std::vector<fs::path> directories;
 
-        // Если пути не указаны, используем текущую директорию
+        // If no paths were given, use the current directory
         if (paths.empty()) {
             directories.push_back(fs::current_path());
         } else {
@@ -202,29 +202,29 @@ public:
             }
         }
 
-        // Запускаем рабочие потоки
+        // Start worker threads
         for (int i = 0; i < thread_count; ++i) {
             threads.emplace_back(&DirSize::worker_thread, this);
         }
 
-        // Добавляем начальные директории в очередь
+        // Enqueue the initial directories
         for (const auto& dir : directories) {
             work_queue.push(dir);
         }
 
-        // Ждем завершения обработки всех директорий
+        // Signal that all directories have been submitted
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
             processing_complete = true;
         }
         cv.notify_all();
 
-        // Дожидаемся завершения всех потоков
+        // Wait for all threads to finish
         for (auto& thread : threads) {
             thread.join();
         }
 
-        // Выводим результаты
+        // Print results
         if (summarize || !directories.empty()) {
             std::vector<std::pair<fs::path, uintmax_t>> results;
             for (const auto& dir : directories) {

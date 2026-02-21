@@ -43,22 +43,22 @@ void show_help() {
     printf("  countdown -s 1h30m  # Countdown 1 hour 30 minutes in simple format\n");
 }
 
-// Парсинг времени из строки в секунды
+// Parse time string into seconds
 int parse_time(const char *time_str) {
     int hours = 0, minutes = 0, seconds = 0;
     char *str = strdup(time_str);
     char *ptr = str;
     int value = 0;
-    
-    // Проверяем, является ли вход просто числом
+
+    // Check if the input is just a plain number
     char *endptr;
     int direct_seconds = (int)strtol(time_str, &endptr, 10);
     if (*endptr == '\0') {
         free(str);
         return direct_seconds;
     }
-    
-    // Парсинг формата HHhMMmSSs
+
+    // Parse HHhMMmSSs format
     while (*ptr) {
         if (isdigit(*ptr)) {
             value = value * 10 + (*ptr - '0');
@@ -83,19 +83,19 @@ int parse_time(const char *time_str) {
         }
         ptr++;
     }
-    
-    // Добавляем последнее значение, если оно есть
+
+    // Append trailing value if present
     if (value > 0) {
         seconds = value;
     }
-    
+
     free(str);
-    
-    // Проверка максимальных значений
+
+    // Validate maximum values
     if (hours > MAX_HOURS || minutes > 59 || seconds > 59) {
         return -1;
     }
-    
+
     return hours * 3600 + minutes * 60 + seconds;
 }
 
@@ -103,7 +103,7 @@ void display_time(int total_seconds) {
     int hours = total_seconds / 3600;
     int minutes = (total_seconds % 3600) / 60;
     int seconds = total_seconds % 60;
-    
+
     switch(display_format) {
         case MINIMAL_FORMAT:
             if (hours > 0) {
@@ -112,7 +112,7 @@ void display_time(int total_seconds) {
                 printf("\r%d:%02d", minutes, seconds);
             }
             break;
-            
+
         case SIMPLE_FORMAT:
             if (hours > 0) {
                 printf("\r%02d:%02d:%02d", hours, minutes, seconds);
@@ -120,7 +120,7 @@ void display_time(int total_seconds) {
                 printf("\r%02d:%02d", minutes, seconds);
             }
             break;
-            
+
         default:
             if (hours > 0) {
                 printf("\r[%02dh %02dm %02ds]", hours, minutes, seconds);
@@ -130,18 +130,18 @@ void display_time(int total_seconds) {
                 printf("\r[%02ds]", seconds);
             }
     }
-    
+
     fflush(stdout);
 }
 
 int main(int argc, char *argv[]) {
     int total_seconds;
     int opt;
-    
-    // Настройка обработчика сигнала
+
+    // Set up signal handler
     signal(SIGINT, signal_handler);
-    
-    // Разбор опций
+
+    // Parse options
     while ((opt = getopt(argc, argv, "smh")) != -1) {
         switch (opt) {
             case 's':
@@ -158,37 +158,37 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
     }
-    
-    // Проверка наличия аргумента времени
+
+    // Check that a time argument was provided
     if (optind >= argc) {
         fprintf(stderr, "Error: Time argument is required\n");
         fprintf(stderr, "Try 'countdown -h' for help\n");
         return 1;
     }
-    
-    // Парсинг времени
+
+    // Parse the time argument
     total_seconds = parse_time(argv[optind]);
     if (total_seconds <= 0) {
         fprintf(stderr, "Error: Invalid time format\n");
         return 1;
     }
-    
-    // Основной цикл обратного отсчета
+
+    // Main countdown loop
     while (total_seconds > 0 && !stop) {
         display_time(total_seconds);
         sleep(1);
         total_seconds--;
     }
-    
+
     if (stop) {
         clear_line();
         printf("Countdown interrupted!\n");
         return 1;
     }
-    
-    // Очистка последней строки и вывод завершения
+
+    // Clear the last line and print completion message
     clear_line();
     printf("Time's up!\n");
-    
+
     return 0;
 }

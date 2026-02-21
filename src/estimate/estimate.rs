@@ -69,7 +69,7 @@ impl ExecutionStats {
             self.fail_count += 1;
         }
 
-        // Обновляем статистику
+        // Update statistics
         if self.times.len() == 1 || duration < self.min {
             self.min = duration;
         }
@@ -77,7 +77,7 @@ impl ExecutionStats {
             self.max = duration;
         }
 
-        // Вычисляем среднее
+        // Recalculate the average
         self.avg = self.total_time / self.times.len() as u32;
     }
 }

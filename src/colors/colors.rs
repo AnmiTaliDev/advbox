@@ -205,7 +205,7 @@ fn parse_args() -> Config {
     let args: Vec<String> = env::args().collect();
     let mut config = Config::default();
     
-    // Если нет аргументов, показываем все
+    // If no arguments are given, show everything
     if args.len() == 1 {
         config.show_basic = true;
         config.show_extended = true;
@@ -263,7 +263,7 @@ fn main() {
         show_test_patterns();
     }
     
-    // Убедимся, что все цвета сброшены
+    // Make sure all color attributes are reset
     print!("\x1b[0m");
     io::stdout().flush().unwrap();
 }

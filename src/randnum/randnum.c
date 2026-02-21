@@ -22,12 +22,12 @@ void show_help() {
     printf("  randnum -u -n 3 1 5    # Generate 3 unique numbers between 1 and 5\n");
 }
 
-// Компаратор для qsort
+// Comparator for qsort
 int compare(const void* a, const void* b) {
     return (*(long*)a - *(long*)b);
 }
 
-// Проверка, существует ли число в массиве
+// Check whether a number already exists in the array
 int number_exists(long* numbers, int count, long number) {
     for(int i = 0; i < count; i++) {
         if(numbers[i] == number) {
@@ -44,11 +44,11 @@ int main(int argc, char *argv[]) {
     int sort = 0;
     int comma = 0;
     int opt;
-    
-    // Инициализация генератора случайных чисел
+
+    // Seed the random number generator
     srand(time(NULL) ^ getpid());
-    
-    // Разбор опций
+
+    // Parse options
     while ((opt = getopt(argc, argv, "n:usch")) != -1) {
         switch (opt) {
             case 'n':
@@ -75,60 +75,60 @@ int main(int argc, char *argv[]) {
                 return 1;
         }
     }
-    
-    // Проверка оставшихся аргументов
+
+    // Check remaining positional arguments
     if (argc - optind != 2) {
         fprintf(stderr, "Error: Min and max values required\n");
         fprintf(stderr, "Try 'randnum -h' for help\n");
         return 1;
     }
-    
-    // Получение min и max значений
+
+    // Read min and max values
     min = atol(argv[optind]);
     max = atol(argv[optind + 1]);
-    
-    // Проверка диапазона
+
+    // Validate the range
     if (min >= max) {
         fprintf(stderr, "Error: Max must be greater than min\n");
         return 1;
     }
-    
-    // Проверка возможности генерации уникальных чисел
+
+    // Check that the range is large enough for unique generation
     if (unique && (max - min + 1) < count) {
         fprintf(stderr, "Error: Range too small for %d unique numbers\n", count);
         return 1;
     }
-    
-    // Выделение памяти для чисел
+
+    // Allocate memory for the numbers
     long* numbers = malloc(count * sizeof(long));
     if (!numbers) {
         fprintf(stderr, "Error: Memory allocation failed\n");
         return 1;
     }
-    
-    // Генерация чисел
+
+    // Generate numbers
     for(int i = 0; i < count; i++) {
         long range = max - min + 1;
         long number;
-        
+
         do {
-            // Используем более точный метод для больших диапазонов
+            // Use a more accurate method for large ranges
             if (range > RAND_MAX) {
                 number = min + ((long)rand() * RAND_MAX + rand()) % range;
             } else {
                 number = min + rand() % range;
             }
         } while (unique && number_exists(numbers, i, number));
-        
+
         numbers[i] = number;
     }
-    
-    // Сортировка если требуется
+
+    // Sort if requested
     if (sort) {
         qsort(numbers, count, sizeof(long), compare);
     }
-    
-    // Вывод результатов
+
+    // Print results
     for(int i = 0; i < count; i++) {
         if (comma && i > 0) {
             printf(", ");
@@ -138,12 +138,12 @@ int main(int argc, char *argv[]) {
             printf("\n");
         }
     }
-    
+
     if (comma) {
         printf("\n");
     }
-    
-    // Освобождение памяти
+
+    // Free memory
     free(numbers);
     return 0;
 }

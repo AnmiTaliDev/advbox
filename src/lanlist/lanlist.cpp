@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <fstream>
 
-// Сетевые заголовки
+// Network headers
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip_icmp.h>
@@ -127,7 +127,7 @@ private:
         }
 
         std::string line;
-        std::getline(arp_file, line); // Пропускаем заголовок
+        std::getline(arp_file, line); // Skip the header line
 
         while (std::getline(arp_file, line)) {
             std::istringstream iss(line);
@@ -302,17 +302,17 @@ public:
             thread.join();
         }
 
-        // Сортируем устройства по IP
+        // Sort devices by IP address
         std::sort(devices.begin(), devices.end(),
                  [](const NetworkDevice& a, const NetworkDevice& b) {
                      return a.ip < b.ip;
                  });
 
-        // Выводим результаты
+        // Print results
         std::cout << "\nFound " << devices.size() << " active devices:\n\n";
-        
+
         if (!devices.empty()) {
-            // Определяем максимальную длину для каждого поля
+            // Determine the maximum field widths
             size_t max_ip = 15;  // xxx.xxx.xxx.xxx
             size_t max_mac = 17; // xx:xx:xx:xx:xx:xx
             size_t max_hostname = 0;
@@ -323,7 +323,7 @@ public:
                 }
             }
 
-            // Выводим заголовок
+            // Print table header
             std::cout << std::left 
                      << std::setw(max_ip + 2) << "IP Address"
                      << std::setw(max_mac + 2) << "MAC Address"
@@ -333,7 +333,7 @@ public:
             std::cout << std::string(max_ip + max_mac + 14 + 
                       (resolve_names ? max_hostname : 0), '-') << std::endl;
 
-            // Выводим устройства
+            // Print device rows
             for (const auto& device : devices) {
                 std::cout << std::left 
                          << std::setw(max_ip + 2) << device.ip

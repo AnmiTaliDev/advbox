@@ -86,24 +86,24 @@ fn should_process_file(
     let name = entry.file_name();
     let name_str = name.to_string_lossy();
 
-    // Проверка скрытых файлов
+    // Hidden file check
     if !config.show_hidden && name_str.starts_with('.') {
         return false;
     }
 
-    // Проверка только директорий
+    // Directories-only check
     if config.dirs_only && !is_dir {
         return false;
     }
 
-    // Проверка паттерна
+    // Include pattern check
     if let Some(ref pattern) = config.pattern {
         if !is_dir && !matches_pattern(&name_str, pattern) {
             return false;
         }
     }
 
-    // Проверка игнорируемого паттерна
+    // Ignore pattern check
     if let Some(ref ignore) = config.ignore {
         if matches_pattern(&name_str, ignore) {
             return false;

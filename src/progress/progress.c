@@ -38,25 +38,25 @@ void show_help() {
 void draw_progress(int percentage) {
     int filled = (progress_width * percentage) / 100;
     int empty = progress_width - filled;
-    
+
     printf("\r[");
-    
-    // Заполненная часть
+
+    // Filled portion
     for(int i = 0; i < filled; i++) {
         printf("=");
     }
-    
-    // Курсор прогресса
+
+    // Progress cursor
     if (percentage < 100) {
         printf(">");
         empty--;
     }
-    
-    // Пустая часть
+
+    // Empty portion
     for(int i = 0; i < empty; i++) {
         printf(" ");
     }
-    
+
     printf("] %3d%%", percentage);
     fflush(stdout);
 }
@@ -64,19 +64,19 @@ void draw_progress(int percentage) {
 int animate_progress(int target_percentage) {
     int current = 0;
     signal(SIGINT, signal_handler);
-    
+
     while (current < target_percentage && !stop) {
         current++;
         draw_progress(current);
         usleep(UPDATE_DELAY);
     }
-    
+
     if (stop) {
         clear_line();
         return 1;
     }
-    
-    // Показываем окончательный результат
+
+    // Show the final result
     draw_progress(target_percentage);
     printf("\n");
     return 0;
@@ -85,8 +85,8 @@ int animate_progress(int target_percentage) {
 int main(int argc, char *argv[]) {
     int percentage = 0;
     int i = 1;
-    
-    // Разбор аргументов
+
+    // Parse arguments
     while (i < argc) {
         if (strcmp(argv[i], "-h") == 0) {
             show_help();
@@ -97,15 +97,15 @@ int main(int argc, char *argv[]) {
                 fprintf(stderr, "Error: Width value is missing\n");
                 return 1;
             }
-            
+
             progress_width = atoi(argv[i + 1]);
-            
+
             if (progress_width < MIN_WIDTH || progress_width > MAX_WIDTH) {
-                fprintf(stderr, "Error: Width must be between %d and %d\n", 
+                fprintf(stderr, "Error: Width must be between %d and %d\n",
                         MIN_WIDTH, MAX_WIDTH);
                 return 1;
             }
-            
+
             i += 2;
         }
         else {
@@ -113,18 +113,18 @@ int main(int argc, char *argv[]) {
             i++;
         }
     }
-    
-    // Проверка значения процента
+
+    // Validate percentage value
     if (percentage < 0 || percentage > 100) {
         fprintf(stderr, "Error: Percentage must be between 0 and 100\n");
         return 1;
     }
-    
-    // Если процент не указан
+
+    // If no percentage was provided
     if (argc == 1) {
         show_help();
         return 1;
     }
-    
+
     return animate_progress(percentage);
 }

@@ -79,26 +79,26 @@ impl ArchiveType {
         match self {
             ArchiveType::Zip => Some(("unzip", vec!["-q"])),
             ArchiveType::Tar => Some(("tar", vec!["-xf"])),
-            ArchiveType::TarGz => Some(("tar", vec["-xzf"])),
-            ArchiveType::TarBz2 => Some(("tar", vec["-xjf"])),
-            ArchiveType::TarXz => Some(("tar", vec["-xJf"])),
-            ArchiveType::TarZst => Some(("tar", vec["--zstd", "-xf"])),
-            ArchiveType::SevenZip => Some(("7z", vec["x"])),
-            ArchiveType::Rar => Some(("unrar", vec["x"])),
+            ArchiveType::TarGz => Some(("tar", vec!["-xzf"])),
+            ArchiveType::TarBz2 => Some(("tar", vec!["-xjf"])),
+            ArchiveType::TarXz => Some(("tar", vec!["-xJf"])),
+            ArchiveType::TarZst => Some(("tar", vec!["--zstd", "-xf"])),
+            ArchiveType::SevenZip => Some(("7z", vec!["x"])),
+            ArchiveType::Rar => Some(("unrar", vec!["x"])),
             ArchiveType::Unknown => None,
         }
     }
     
     fn get_list_command(&self) -> Option<(&'static str, Vec<&'static str>)> {
         match self {
-            ArchiveType::Zip => Some(("unzip", vec["-l"])),
-            ArchiveType::Tar => Some(("tar", vec["-tf"])),
-            ArchiveType::TarGz => Some(("tar", vec["-tzf"])),
-            ArchiveType::TarBz2 => Some(("tar", vec["-tjf"])),
-            ArchiveType::TarXz => Some(("tar", vec["-tJf"])),
-            ArchiveType::TarZst => Some(("tar", vec["--zstd", "-tf"])),
-            ArchiveType::SevenZip => Some(("7z", vec["l"])),
-            ArchiveType::Rar => Some(("unrar", vec["l"])),
+            ArchiveType::Zip => Some(("unzip", vec!["-l"])),
+            ArchiveType::Tar => Some(("tar", vec!["-tf"])),
+            ArchiveType::TarGz => Some(("tar", vec!["-tzf"])),
+            ArchiveType::TarBz2 => Some(("tar", vec!["-tjf"])),
+            ArchiveType::TarXz => Some(("tar", vec!["-tJf"])),
+            ArchiveType::TarZst => Some(("tar", vec!["--zstd", "-tf"])),
+            ArchiveType::SevenZip => Some(("7z", vec!["l"])),
+            ArchiveType::Rar => Some(("unrar", vec!["l"])),
             ArchiveType::Unknown => None,
         }
     }
@@ -132,7 +132,7 @@ fn extract_archive(config: &Config) -> Result<(), String> {
                 let mut command = Command::new(cmd);
                 command.args(base_args);
                 
-                // Добавляем специфичные опции
+                // Add format-specific options
                 match cmd {
                     "unzip" => {
                         if config.force {
@@ -165,7 +165,7 @@ fn extract_archive(config: &Config) -> Result<(), String> {
                 
                 if !config.list_only {
                     if let Some(ref dest) = config.destination {
-                        // Создаем директорию назначения, если она не существует
+                        // Create the destination directory if it does not exist
                         fs::create_dir_all(dest)
                             .map_err(|e| format!("Failed to create destination directory: {}", e))?;
                         
@@ -186,7 +186,7 @@ fn extract_archive(config: &Config) -> Result<(), String> {
                     println!("{}", String::from_utf8_lossy(&output.stdout));
                 }
                 
-                // Удаляем архив, если не указан флаг keep
+                // Remove the archive unless the keep flag is set
                 if !config.keep && !config.list_only {
                     fs::remove_file(&config.archive_path)
                         .map_err(|e| format!("Failed to remove archive: {}", e))?;

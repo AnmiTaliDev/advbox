@@ -86,11 +86,11 @@ private:
         struct tm timeinfo = {};
         std::istringstream ss(date_str);
         
-        // Пробуем формат YYYY-MM-DD HH:MM:SS
+        // Try YYYY-MM-DD HH:MM:SS format
         if (date_str.length() > 10) {
             ss >> std::get_time(&timeinfo, "%Y-%m-%d %H:%M:%S");
         } else {
-            // Пробуем формат YYYY-MM-DD
+            // Try YYYY-MM-DD format
             ss >> std::get_time(&timeinfo, "%Y-%m-%d");
         }
         
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
         DateCalculator calc;
         size_t arg_index = 0;
         
-        // Разбор опций
+        // Parse options
         while (arg_index < args.size() && args[arg_index][0] == '-') {
             if (args[arg_index] == "-f" || args[arg_index] == "--format") {
                 if (++arg_index >= args.size()) {
@@ -201,7 +201,7 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // Проверка наличия всех необходимых аргументов
+        // Validate that all required arguments are present
         if (args.size() - arg_index < 4) {
             throw std::runtime_error("Not enough arguments");
         }

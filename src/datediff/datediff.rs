@@ -54,7 +54,7 @@ impl DateTime {
     }
 
     fn from_str(s: &str) -> Result<Self, String> {
-        // Обработка специальных ключевых слов
+        // Handle special keywords
         match s.to_lowercase().as_str() {
             "now" => return Ok(DateTime::now()),
             "today" => return Ok(DateTime::today()),
@@ -63,7 +63,7 @@ impl DateTime {
             _ => {}
         }
 
-        // Парсинг даты и времени из строки
+        // Parse date and time from string
         let parts: Vec<&str> = s.split(' ').collect();
         let date_parts: Vec<&str> = parts[0].split('-').collect();
         
@@ -92,7 +92,7 @@ impl DateTime {
             (0, 0, 0)
         };
 
-        // Проверка валидности
+        // Validate field ranges
         if month < 1 || month > 12 {
             return Err("Month must be between 1 and 12".to_string());
         }
@@ -147,7 +147,7 @@ impl DateTime {
     }
 }
 
-// Конвертация даты в секунды от UNIX эпохи
+// Convert a date to seconds since the Unix epoch
 fn date_to_seconds(year: i32, month: u32, day: u32, 
                   hour: u32, minute: u32, second: u32) -> i64 {
     let days_before_month = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -155,12 +155,12 @@ fn date_to_seconds(year: i32, month: u32, day: u32,
     let mut years = year - 1970;
     let mut days = days_before_month[month as usize - 1] + day - 1;
     
-    // Добавляем дни за високосные годы
+    // Add extra days for leap years
     let leap_years = (1968 + years) / 4 - (1968 + years) / 100 + (1968 + years) / 400 
                     - (1968) / 4 + (1968) / 100 - (1968) / 400;
     days += leap_years as u32;
     
-    // Проверяем текущий год на високосность
+    // Check if the current year is a leap year
     if month > 2 && ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0) {
         days += 1;
     }
@@ -168,7 +168,7 @@ fn date_to_seconds(year: i32, month: u32, day: u32,
     days as i64 * 86400 + hour as i64 * 3600 + minute as i64 * 60 + second as i64
 }
 
-// Конвертация секунд в дату
+// Convert seconds since the Unix epoch to a date
 fn seconds_to_date(secs: i64) -> (i32, u32, u32, u32, u32, u32) {
     let days = secs / 86400;
     let secs_of_day = secs % 86400;
@@ -199,7 +199,7 @@ fn seconds_to_date(secs: i64) -> (i32, u32, u32, u32, u32, u32) {
     let mut month = 1;
     let mut day = days_remaining + 1;
     
-    // Корректировка для високосного года
+    // Adjust for leap year
     let is_leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
     
     for (i, &days_in_month) in month_days.iter().enumerate() {
